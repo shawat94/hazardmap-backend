@@ -1,0 +1,5 @@
+.env
+.flaskenv
+manage.py
+.venv
+.idea
