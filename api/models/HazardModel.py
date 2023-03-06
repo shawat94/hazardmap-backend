@@ -1,16 +1,19 @@
 from . import db
 import datetime
 from marshmallow import fields, Schema
+from geoalchemy2 import Geometry
+from geoalchemy2.shape import to_shape
 
 
 class HazardModel(db.Model):
     __tablename__ = 'hazards'
+    __table_args__ = {'extend_existing': True}
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(128), nullable=False)
+    hazard_name = db.Column(db.String(128), nullable=False)
     category = db.Column(db.String())
-    geom = db.Column(db.String())
-    created_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    geom = db.Column(Geometry('POINT'))
+    created_by = db.Column(db.Integer, db.ForeignKey('users.user_id'))
     created_at = db.Column(db.DateTime)
     modified_at = db.Column(db.DateTime)
 
@@ -18,7 +21,8 @@ class HazardModel(db.Model):
         """
         Class constructor
         """
-        self.name = data.get('name')
+        self.id = data.get("id")
+        self.hazard_name = data.get('hazard_name')
         self.category = data.get('category')
         self.geom = data.get('geom')
         self.created_by = data.get('created_by')
@@ -48,14 +52,14 @@ class HazardModel(db.Model):
         return HazardModel.query.get(id)
 
     def __repr__(self):
-        return f"<Hazard {self.name}>"
+        return f"<Hazard {self.hazard_name}>"
 
 
 class HazardSchema(Schema):
     id = fields.Int(dump_only=True)
-    name = fields.Str(required=True)
+    hazard_name = fields.Str(required=True)
     category = fields.Str(required=True)
     geom = fields.Str(required=True)
-    created_by = fields.Int(required=True)
-    created_at = fields.DateTime(dump_only=True)
-    modified_at = fields.DateTime(dump_only=True)
+    created_by = fields.Int(required=False)
+    created_at = fields.DateTime(dump_only=False)
+    modified_at = fields.DateTime(dump_only=False)

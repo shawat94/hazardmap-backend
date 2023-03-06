@@ -16,8 +16,9 @@ class Authentication():
                 }
             return jwt.encode(payload,
                               os.getenv('JWT_SECRET_KEY'),
-                              'HS256').decode('utf-8')
+                              'HS256')
         except Exception as e:
+            print(e)
             return Response(
                 mimetype="application/json",
                 response=json.dumps({'error': 'Unable to generate user token'}),
@@ -27,14 +28,17 @@ class Authentication():
     @staticmethod
     def decode_token(token):
         response = {'data': {}, 'error': {}}
+        print('Token in decoding ' + token)
         try:
-            payload = jwt.decode(token, os.getend('JWT_SECRET_KEY'))
+            payload = jwt.decode(token, os.getenv('JWT_SECRET_KEY'), algorithms=["HS256"])
             response['data'] = {'user_id': payload['id']}
             return response
         except jwt.ExpiredSignatureError:
+            print('ExpiredSignatureError')
             response['error'] = {'message': 'Authentication token has expired. Please log in again'}
             return response
         except jwt.InvalidTokenError:
+            print('InvalidTokenError')
             response['error'] = {'message': 'Authentication token is invalid'}
 
     @staticmethod

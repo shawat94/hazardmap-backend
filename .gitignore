@@ -3,3 +3,5 @@
 manage.py
 .venv
 .idea
+.alembic/versions
+*__pycache

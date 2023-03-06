@@ -6,15 +6,16 @@ from .HazardModel import HazardSchema
 
 
 class UserModel(db.Model):
-    __tablename__ = 'hazards'
+    __tablename__ = 'users'
+    __table_args__ = {'extend_existing': True}
 
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(128), nullable=False)
+    user_id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(128), nullable=False)
     password = db.Column(db.String(128), nullable=True)
-    hazards = db.relationship('HazardModel', backref='users', lazy=True)
+    created_hazards = db.relationship('HazardModel', backref='users', lazy=True)
 
     def __init__(self, data):
-        self.name = data.get('name')
+        self.username = data.get('username')
         self.password = self.__generate_hash(data.get('password'))
 
     def save(self):
@@ -36,7 +37,7 @@ class UserModel(db.Model):
     def __generate_hash(self, password):
         return bcrypt.generate_password_hash(password, rounds=10).decode('utf-8')
 
-    def __check_hash(self, password):
+    def check_hash(self, password):
         return bcrypt.check_password_hash(self.password, password)
 
     @staticmethod
@@ -47,12 +48,16 @@ class UserModel(db.Model):
     def get_one_user(id):
         return UserModel.query.get(id)
 
+    @staticmethod
+    def get_user_by_username(username):
+        return UserModel.query.filter(UserModel.username==username).all()[0]
+
     def __repr__(self):
-        return f"<Hazard {self.name}>"
+        return f"<User {self.username}>"
 
 
 class UserSchema(Schema):
-    id = fields.Int(dump_only=True)
-    name = fields.Str(required=True)
+    user_id = fields.Int(dump_only=True)
+    username = fields.Str(required=True)
     password = fields.Str(required=True)
-    hazards = fields.Nested(HazardSchema, many=True)
+    created_hazards = fields.Nested(HazardSchema, many=True)
