@@ -24,11 +24,7 @@ def create():
     user = UserModel(data)
     user.save()
 
-    print(user_schema.dump(user))
-
     user_data = user_schema.dump(user)
-
-    token = Authentication.generate_token(user_data.get('user_id'))
 
     return make_response(jsonify(user_data), 201)
 
@@ -54,7 +50,6 @@ def login():
         return make_response(json.dumps({'error': 'invalid credentials'}), 400)
 
     user_data = user_schema.dump(user)
-
 
     token = Authentication.generate_token(user_data.get('user_id'))
 

@@ -1,6 +1,7 @@
 from flask import request, make_response, json, Response, Blueprint, jsonify
 from ..models.HazardModel import HazardModel, HazardSchema
 from .UserController import get_a_user
+import re
 from ..shared.authorization import Authentication
 from marshmallow import ValidationError
 from ..shared.geometry import wkb_hazard_to_geojson, feature_list_to_feature_collection
@@ -18,30 +19,19 @@ def create():
     except ValidationError as error:
         print(error)
         return Response(response=error.messages, status=400, mimetype="application/json")
-
-    token = request.headers.get('authorization')
-
+    bearer_token = request.headers.get('Authorization')
+    print(bearer_token)
+    token = re.match("^Bearer\s+(.*)", bearer_token).group(1)
     print(token)
-
     user_id = Authentication.decode_token(token)['data']['user_id']
-
-    print(json.dumps(user_id))
-
-    user = json.loads(get_a_user(user_id).data)
-
-    print(user)
-
     data['created_by'] = user_id
-
-    print(data)
-
     hazard = HazardModel(data)
 
     try:
         hazard.save()
     except Exception as error:
         return make_response(json.dumps({'error': error}), 400)
-    hazard_data = hazard_schema.dump(hazard)
+    hazard_data = wkb_hazard_to_geojson(hazard_schema.dump(hazard))
 
     return make_response(jsonify(hazard_data), 200)
 
@@ -62,5 +52,15 @@ def get_a_hazard(hazard_id):
         return Response(response=json.dumps({'error': '/Hazard not found'}), status=404)
 
     selected_hazard = hazard_schema.dump(hazard)
-    formatted_hazard = hazard_to_geojson(selected_hazard)
-    return Response(response=json.dumps({'data': formatted_hazard}), status=200)
+    formatted_hazard = wkb_hazard_to_geojson(selected_hazard)
+    return make_response(jsonify(formatted_hazard), 200)
+
+@hazard_api.route('/api/v1/hazards/<int:hazard_id>/', methods=['DELETE'], strict_slashes=False)
+def delete_a_hazard(hazard_id):
+    hazard = HazardModel.get_one_hazard(hazard_id)
+    if not hazard:
+        return Response(response=json.dumps({'error': 'Hazard not found'}), status=404)
+
+    hazard.delete()
+    return make_response(jsonify(f'Hazard {hazard_id} has been deleted.'), 200)
+

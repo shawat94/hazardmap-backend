@@ -49,6 +49,7 @@ class HazardModel(db.Model):
 
     @staticmethod
     def get_one_hazard(id):
+        print(id)
         return HazardModel.query.get(id)
 
     def __repr__(self):
