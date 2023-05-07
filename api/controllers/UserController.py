@@ -60,10 +60,9 @@ def login():
     return make_response(jsonify(user_data), 200)
 
 @user_api.route('/api/v1/users/', methods=['GET'])
-@Authentication.auth_required
 def get_all():
     users = UserModel.get_all_users()
-    all_users = user_schema.dump(users, many=True).data
+    all_users = user_schema.dump(users, many=True)
     return make_response(jsonify(all_users), 200)
 
 

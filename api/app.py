@@ -1,3 +1,4 @@
+import os
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
@@ -14,7 +15,7 @@ def create_app(env_name):
     app.register_blueprint(user_blueprint)
     app.register_blueprint(hazard_blueprint)
 
-    CORS(app, resources={r'/*': {'origins': 'http://localhost:3000'}},
+    CORS(app, resources={r'/*': {'origins': os.getenv('ALLOWED_ORIGINS')}},
          supports_credentials=True
          )
     app.config['CORS_HEADERS'] = 'Content-Type'

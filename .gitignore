@@ -5,3 +5,5 @@ manage.py
 .idea
 .alembic/versions
 *__pycache
+serverless.yml
+.dockerignore
